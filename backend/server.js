@@ -44,9 +44,9 @@ app.use('/api/timetable', timetableRouter);
 app.use('/api/assignments', assignmentsRouter);
 app.use('/api/dashboard', dashboardRouter);
 
-// Serve frontend static files
+// Serve frontend static files from backend/public/
 const path = require('path');
-const frontendPath = path.join(__dirname, '..', 'frontend');
+const frontendPath = path.join(__dirname, 'public');
 app.use(express.static(frontendPath));
 
 // Catch-all: serve index.html for any non-API route
