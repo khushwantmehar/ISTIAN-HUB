@@ -44,6 +44,16 @@ app.use('/api/timetable', timetableRouter);
 app.use('/api/assignments', assignmentsRouter);
 app.use('/api/dashboard', dashboardRouter);
 
+// Serve frontend static files
+const path = require('path');
+const frontendPath = path.join(__dirname, '..', 'frontend');
+app.use(express.static(frontendPath));
+
+// Catch-all: serve index.html for any non-API route
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
 // Central error handler — also catches Multer errors (bad file type, too large)
 // thrown by the upload middleware in the timetable/assignments routes.
 app.use((err, req, res, next) => {
