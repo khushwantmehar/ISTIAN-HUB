@@ -3,7 +3,9 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const UPLOAD_DIR = process.env.STORAGE_PATH
+  ? path.join(process.env.STORAGE_PATH, 'uploads')
+  : path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const ALLOWED_MIME = new Set([
