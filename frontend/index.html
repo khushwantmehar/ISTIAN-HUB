@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; img-src 'self' data: blob: https:; media-src 'self' blob: https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https: data:; font-src 'self' https: data:; connect-src 'self' https:; frame-src 'self' blob: https:;">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISTIAN HUB — Your study command centre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script>window.ISTIAN_API_BASE = window.ISTIAN_API_BASE || 'https://istian-hub-production.up.railway.app/api';</script>
+<style>
+  :root{
+    --paper:#FAF7F2;
+    --card:#FFFFFF;
+    --plum:#2B2145;
+    --plum-2:#3B2E5E;
+    --amber:#F2A93B;
+    --amber-2:#F7C56C;
+    --green:#3F9163;
+    --coral:#E6553F;
+    --ink:#241C34;
+    --muted: rgba(36,28,52,0.6);
+    --line: rgba(43,33,69,0.12);
+    --shadow: 0 16px 40px -18px rgba(43,33,69,0.28);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background-image: radial-gradient(circle, rgba(43,33,69,0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  h1,h2,h3,h4{font-family:'Sora', sans-serif; color:var(--plum); font-weight:700; line-height:1.15;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  a{color:inherit; text-decoration:none;}
+  button, input, textarea, select{font-family:inherit;}
+  button{cursor:pointer; border:none; background:none;}
+  ::selection{background:var(--amber); color:var(--plum);}
+  :focus-visible{outline:2.5px solid var(--green); outline-offset:2px; border-radius:4px;}
+
+  .app{display:grid; grid-template-columns:250px 1fr; min-height:100vh;}
+  @media (max-width:880px){ .app{grid-template-columns:1fr;} }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar{
+    background:var(--plum); color:#EDE9F5; padding:28px 20px;
+    display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+  }
+  @media (max-width:880px){
+    .sidebar{position:relative; height:auto; flex-direction:row; align-items:center; justify-content:space-between; padding:16px 20px;}
+  }
+  .brand{display:flex; align-items:center; gap:10px; margin-bottom:36px;}
+  @media (max-width:880px){ .brand{margin-bottom:0;} }
+  .brand .mark{
+    width:34px; height:34px; border-radius:10px; background:var(--amber);
+    display:flex; align-items:center; justify-content:center; font-family:'Sora',sans-serif; font-weight:800; color:var(--plum); font-size:16px;
+  }
+  .brand .name{font-family:'Sora',sans-serif; font-weight:800; font-size:16.5px; letter-spacing:.01em; color:#fff;}
+  .brand .name span{color:var(--amber);}
+
+  .side-nav{display:flex; flex-direction:column; gap:4px; flex:1;}
+  @media (max-width:880px){ .side-nav{display:none;} }
+  .side-nav button{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px;
+    font-size:14px; font-weight:600; color:rgba(237,233,245,0.7); text-align:left;
+    transition:background .18s ease, color .18s ease;
+  }
+  .side-nav button svg{width:18px; height:18px; flex-shrink:0; stroke:currentColor;}
+  .side-nav button:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  .side-nav button.active{background:var(--amber); color:var(--plum);}
+
+  .side-foot{font-size:11.5px; color:rgba(237,233,245,0.45); margin-top:auto;}
+  @media (max-width:880px){ .side-foot{display:none;} }
+
+  .mobile-tabs{
+    display:none; position:sticky; top:0; z-index:50; background:var(--card);
+    border-bottom:1px solid var(--line); overflow-x:auto; white-space:nowrap;
+    padding:10px 14px; gap:8px;
+  }
+  @media (max-width:880px){ .mobile-tabs{display:flex;} }
+  .mobile-tabs button{
+    padding:8px 14px; border-radius:100px; font-size:13px; font-weight:700; color:var(--plum);
+    background:var(--paper); border:1px solid var(--line); flex-shrink:0;
+  }
+  .mobile-tabs button.active{background:var(--amber); border-color:var(--amber);}
+
+  /* ===== MAIN ===== */
+  main{padding:36px 40px 80px;}
+  @media (max-width:640px){ main{padding:22px 18px 60px;} }
+  .view{display:none;}
+  .view.active{display:block; animation:fadeIn .35s ease;}
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .page-head{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:28px;}
+  .page-head h1{font-size:clamp(24px,3vw,32px);}
+  .page-head p{color:var(--muted); font-size:14px; margin-top:4px;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--green); font-weight:700; margin-bottom:6px;
+  }
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);}
+  .pad{padding:22px;}
+
+  .list-row{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:12px 0; border-bottom:1px solid var(--line);
+  }
+  .list-row:last-child{border-bottom:none;}
+  .list-row .lr-title{font-weight:700; font-size:14px; color:var(--plum);}
+  .list-row .lr-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+  .pill{font-size:11px; font-weight:800; padding:4px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.03em;}
+  .pill.amber{background:rgba(242,169,59,0.18); color:#8a5f18;}
+  .pill.green{background:rgba(63,145,99,0.15); color:var(--green);}
+  .pill.coral{background:rgba(230,85,63,0.14); color:var(--coral);}
+  .empty-note{font-size:13.5px; color:var(--muted); padding:14px 0;}
+
+  /* Forms */
+  .form-card{margin-bottom:26px;}
+  .form-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; align-items:end;}
+  @media (max-width:900px){ .form-grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:560px){ .form-grid{grid-template-columns:1fr;} }
+  .form-grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  @media (max-width:900px){ .form-grid.cols-3{grid-template-columns:1fr 1fr;} }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.span-2{grid-column:span 2;}
+  @media (max-width:560px){ .field.span-2{grid-column:span 1;} }
+  .field label{font-size:11.5px; font-weight:700; color:var(--plum); letter-spacing:.02em;}
+  .field input, .field select, .field textarea{
+    border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13.5px;
+    background:var(--paper); color:var(--ink); transition:border-color .2s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--green); outline:none;}
+  .field textarea{resize:vertical; min-height:60px;}
+  .btn-add{
+    background:var(--plum); color:#fff; padding:11px 20px; border-radius:10px; font-weight:700; font-size:13.5px;
+    transition:background .2s ease, transform .15s ease; display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn-add:hover{background:var(--plum-2); transform:translateY(-1px);}
+  .form-error{
+    background:#FBEAE6; color:var(--coral); font-size:12.5px; font-weight:600; padding:9px 12px;
+    border-radius:8px; margin-top:12px; display:none;
+  }
+  .form-error.show{display:block;}
+
+  /* Subject chips */
+  .chip-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;}
+  .chip{
+    padding:7px 15px; border-radius:100px; font-size:12.5px; font-weight:700; color:var(--plum);
+    background:var(--card); border:1px solid var(--line); cursor:pointer;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .chip.active{background:var(--plum); color:#fff; border-color:var(--plum);}
+
+  /* Notes */
+  .notes-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:900px){ .notes-grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:600px){ .notes-grid{grid-template-columns:1fr;} }
+  .note-card{padding:18px; display:flex; flex-direction:column; gap:10px; position:relative;}
+  .note-card .n-subject{font-size:11px; font-weight:800; color:var(--green); text-transform:uppercase; letter-spacing:.04em;}
+  .note-card h4{font-size:15px; line-height:1.3;}
+  .note-card .n-date{font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;}
+  .note-card .n-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:auto;}
+  .del-btn{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--paper); color:var(--coral); font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .2s; flex-shrink:0; border:1px solid var(--line);
+  }
+  .note-card:hover .del-btn{opacity:1;}
+
+  /* Timetable */
+  .tt-image-wrap{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    overflow:hidden; box-shadow:var(--shadow); margin-bottom:24px;
+  }
+  .tt-image-wrap img{width:100%; display:block; max-height:700px; object-fit:contain; background:#f0ede8;}
+  .tt-image-header{
+    padding:16px 22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .tt-image-header .tt-img-info{display:flex; align-items:center; gap:10px;}
+  .tt-img-icon{
+    width:36px; height:36px; border-radius:9px; background:rgba(63,145,99,0.15); color:var(--green);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .tt-img-name{font-size:13px; font-weight:700; color:var(--plum);}
+  .tt-img-sub{font-size:11.5px; color:var(--muted);}
+  .tt-upload-zone{
+    border:2px dashed var(--line); border-radius:14px; padding:40px 24px; text-align:center;
+    background:var(--paper); margin-bottom:24px; transition:border-color .2s;
+  }
+  .tt-upload-zone:hover{border-color:var(--green);}
+  .tt-upload-zone p{color:var(--muted); font-size:13.5px; margin-bottom:16px; line-height:1.5;}
+
+  /* Assignments */
+  .subject-section{margin-bottom:32px;}
+  .subject-section-head{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .subject-section-head h3{font-size:16px;}
+  .subject-count{font-size:11px; font-weight:800; padding:3px 9px; border-radius:100px; background:rgba(43,33,69,0.1); color:var(--plum);}
+  .assignment-row{
+    display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); position:relative;
+  }
+  .assignment-row:last-child{border-bottom:none;}
+  .check-circle{
+    width:24px; height:24px; border-radius:50%; border:2px solid var(--line); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; transition:all .2s ease;
+  }
+  .check-circle.done{background:var(--green); border-color:var(--green); color:#fff;}
+  .assignment-row .a-info{flex:1;}
+  .assignment-row .a-title{font-weight:700; font-size:14.5px; color:var(--plum);}
+  .assignment-row.is-done .a-title{text-decoration:line-through; opacity:.55;}
+  .assignment-row .a-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+  .assignment-row .a-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .a-file-link{
+    display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; color:#fff;
+    background:var(--green); padding:6px 12px; border-radius:100px; white-space:nowrap;
+  }
+  .a-file-link:hover{opacity:.88;}
+
+  /* Buttons */
+  .btn-view{
+    background:rgba(43,33,69,0.1); color:var(--plum); padding:7px 13px; border-radius:100px;
+    font-weight:700; font-size:12px; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
+  }
+  .btn-view:hover{background:rgba(43,33,69,0.18);}
+  .btn-download{
+    background:var(--green); color:#fff; padding:9px 16px; border-radius:100px; font-weight:700; font-size:12.5px;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .btn-download:hover{opacity:.88;}
+  .btn-remove-file{color:var(--coral); font-size:12px; font-weight:700; padding:8px;}
+
+  /* Dashboard latest uploads */
+  .upload-list{display:flex; flex-direction:column; gap:12px;}
+  .upload-item{
+    display:flex; align-items:center; gap:14px; padding:14px 16px;
+    background:var(--paper); border:1px solid var(--line); border-radius:14px;
+  }
+  .upload-icon{width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .upload-icon.tt{background:rgba(242,169,59,0.18); color:#8a5f18;}
+  .upload-icon.note{background:rgba(63,145,99,0.15); color:var(--green);}
+  .upload-icon.asg{background:rgba(43,33,69,0.1); color:var(--plum);}
+  .upload-info{flex:1; min-width:0;}
+  .upload-title{font-size:13.5px; font-weight:700; color:var(--plum); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .upload-meta{font-size:11.5px; color:var(--muted); margin-top:2px;}
+
+  /* ===== PREVIEW MODAL ===== */
+  .preview-overlay{
+    display:none; position:fixed; inset:0; z-index:500;
+    background:rgba(20,15,40,0.75); backdrop-filter:blur(4px);
+    align-items:center; justify-content:center; padding:12px;
+  }
+  .preview-overlay.open{display:flex;}
+  .preview-box{
+    background:var(--card); border-radius:16px; box-shadow:0 32px 80px -20px rgba(43,33,69,0.5);
+    width:85vw; height:85vh; display:flex; flex-direction:column; overflow:hidden;
+  }
+  .preview-header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 20px; border-bottom:1px solid var(--line); flex-shrink:0;
+  }
+  .preview-title{font-size:14px; font-weight:700; color:var(--plum); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .preview-close{
+    width:34px; height:34px; border-radius:50%; background:var(--paper); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:17px; color:var(--ink); flex-shrink:0;
+  }
+  .preview-close:hover{background:var(--line);}
+  .preview-body{flex:1; overflow:auto; min-height:0;}
+  .preview-body iframe{width:100%; height:100%; border:none; display:block;}
+  .preview-body img{width:100%; height:100%; object-fit:contain; display:block; background:#f0ede8;}
+  .preview-body .preview-unsupported{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; padding:60px 24px; text-align:center; color:var(--muted); font-size:14px; height:100%;
+  }
+
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--plum); color:#fff; padding:13px 22px; border-radius:100px;
+    font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:all .3s ease; z-index:300;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ===== AUTH GATE ===== */
+  #authGate{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .auth-card{
+    background:var(--card); border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow);
+    width:min(400px, 100%); padding:34px 30px;
+  }
+  .auth-brand{display:flex; align-items:center; gap:10px; margin-bottom:26px;}
+  .auth-brand .mark{
+    width:36px; height:36px; border-radius:10px; background:var(--plum);
+    display:flex; align-items:center; justify-content:center; font-family:'Sora',sans-serif; font-weight:800; color:var(--amber); font-size:16px;
+  }
+  .auth-brand .name{font-family:'Sora',sans-serif; font-weight:800; font-size:18px; color:var(--plum);}
+  .auth-brand .name span{color:var(--coral);}
+  .auth-tabs{display:flex; gap:6px; background:var(--paper); border-radius:12px; padding:4px; margin-bottom:22px;}
+  .auth-tabs button{flex:1; padding:9px; border-radius:9px; font-size:13px; font-weight:700; color:var(--muted);}
+  .auth-tabs button.active{background:var(--card); color:var(--plum); box-shadow:0 2px 8px rgba(43,33,69,0.1);}
+  .auth-form{display:none; flex-direction:column; gap:14px;}
+  .auth-form.active{display:flex;}
+  .auth-form .field label{font-size:12px;}
+  .auth-submit{
+    background:var(--plum); color:#fff; padding:13px; border-radius:11px; font-weight:700; font-size:14px;
+    margin-top:4px; transition:background .2s;
+  }
+  .auth-submit:hover{background:var(--plum-2);}
+  .auth-hint{font-size:12px; color:var(--muted); text-align:center; margin-top:16px; line-height:1.5;}
+
+  [data-admin-only]{display:none;}
+  body.role-admin [data-admin-only]{display:block;}
+  body.role-admin .form-grid[data-admin-only]{display:grid;}
+  body.role-admin button.btn-add[data-admin-only]{display:inline-flex;}
+  body.role-admin .tt-upload-zone[data-admin-only]{display:block;}
+
+  .user-chip{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px;
+    background:rgba(255,255,255,0.06); margin-bottom:10px;
+  }
+  @media (max-width:880px){ .user-chip{display:none;} }
+  .user-chip .u-avatar{
+    width:32px; height:32px; border-radius:50%; background:var(--amber); color:var(--plum);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;
+  }
+  .user-chip .u-name{font-size:12.5px; font-weight:700; color:#fff;}
+  .user-chip .u-role{font-size:10.5px; color:rgba(237,233,245,0.55); text-transform:uppercase; letter-spacing:.04em;}
+  .logout-btn{font-size:12px; font-weight:700; color:rgba(237,233,245,0.55); padding:8px 4px; text-align:left;}
+  @media (max-width:880px){ .logout-btn{display:none;} }
+  .logout-btn:hover{color:#fff;}
+</style>
+</head>
+<body>
+
+<div id="authGate">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="mark">IH</div>
+      <div class="name">ISTIAN <span>HUB</span></div>
+    </div>
+    <div class="auth-tabs">
+      <button id="tabLoginBtn" class="active">Log in</button>
+      <button id="tabRegisterBtn">Student sign up</button>
+    </div>
+    <form class="auth-form active" id="loginForm">
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@school.edu" required></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" required></div>
+      <div class="form-error" id="loginError"></div>
+      <button type="submit" class="auth-submit">Log in</button>
+    </form>
+    <form class="auth-form" id="registerForm">
+      <div class="field"><label>Full name</label><input type="text" id="regName" placeholder="Your name" required></div>
+      <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="you@school.edu" required></div>
+      <div class="field"><label>Password</label><input type="password" id="regPassword" placeholder="At least 6 characters" required></div>
+      <div class="form-error" id="registerError"></div>
+      <button type="submit" class="auth-submit">Create student account</button>
+    </form>
+    <p class="auth-hint">Students can sign up directly. Admin/teacher accounts are set up separately — ask them for login credentials.</p>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none;">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">IH</div>
+      <div class="name">ISTIAN <span>HUB</span></div>
+    </div>
+    <div class="user-chip" id="userChip"></div>
+    <nav class="side-nav" id="sideNav">
+      <button data-view="dashboard" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </button>
+      <button data-view="timetable">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        Timetable
+      </button>
+      <button data-view="notes">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+        Notes
+      </button>
+      <button data-view="assignments">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Assignments
+      </button>
+    </nav>
+    <button class="logout-btn" id="logoutBtn">↩ Log out</button>
+    <div class="side-foot" id="sideFoot">Loading...</div>
+  </aside>
+
+  <div class="mobile-tabs" id="mobileTabs">
+    <button data-view="dashboard" class="active">Dashboard</button>
+    <button data-view="timetable">Timetable</button>
+    <button data-view="notes">Notes</button>
+    <button data-view="assignments">Assignments</button>
+  </div>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="view active" id="view-dashboard">
+      <div class="page-head">
+        <div><p class="eyebrow" id="dashDate">Today</p><h1>Welcome back 👋</h1></div>
+      </div>
+      <div class="card pad">
+        <h3 style="font-size:16px; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Latest Uploads
+        </h3>
+        <div id="latestUploads"><p class="empty-note">No files uploaded yet.</p></div>
+      </div>
+    </section>
+
+    <!-- TIMETABLE -->
+    <section class="view" id="view-timetable">
+      <div class="page-head">
+        <div><p class="eyebrow">Timetable</p><h1>Class schedule</h1><p id="ttHint" style="margin-top:6px; color:var(--muted); font-size:14px;"></p></div>
+      </div>
+      <div class="tt-upload-zone" data-admin-only id="ttUploadZone">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" style="margin-bottom:12px;"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12l4-4 4 4"/></svg>
+        <p>Upload your class timetable as an image.<br>Supported: PNG, JPG, WEBP, GIF (max 100 MB)</p>
+        <div style="display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
+          <label style="cursor:pointer;">
+            <input type="file" id="ttFileInput" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;">
+            <span class="btn-add" style="display:inline-flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              Choose image
+            </span>
+          </label>
+          <button class="btn-add" id="uploadTtFileBtn" style="background:var(--green);">Upload</button>
+        </div>
+        <div id="ttSelectedFile" style="margin-top:10px; font-size:12.5px; color:var(--muted);"></div>
+        <div class="form-error" id="ttFileError" style="margin-top:12px;"></div>
+      </div>
+      <div id="ttImageWrap"></div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="view" id="view-notes">
+      <div class="page-head">
+        <div><p class="eyebrow">Notes</p><h1>Subject notes</h1></div>
+      </div>
+      <div class="card form-card pad" data-admin-only>
+        <h4 style="font-size:14.5px; margin-bottom:14px;">Upload a note with file</h4>
+        <div class="form-grid cols-3">
+          <div class="field"><label>Subject</label><input type="text" id="noteSubject" placeholder="e.g. Physics"></div>
+          <div class="field span-2"><label>Title</label><input type="text" id="noteTitle" placeholder="e.g. Chapter 3 — Motion"></div>
+        </div>
+        <div class="form-grid" style="margin-top:14px; grid-template-columns:1fr auto;">
+          <div class="field"><label>Attach file (PDF, DOCX, image…)</label><input type="file" id="noteFileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.webp"></div>
+          <div class="field"><label>&nbsp;</label><button class="btn-add" id="addNoteBtn">+ Upload note</button></div>
+        </div>
+        <div class="form-error" id="noteError"></div>
+      </div>
+      <div class="chip-row" id="noteChips"></div>
+      <div class="notes-grid" id="notesGrid"></div>
+    </section>
+
+    <!-- ASSIGNMENTS -->
+    <section class="view" id="view-assignments">
+      <div class="page-head">
+        <div><p class="eyebrow">Assignments</p><h1>Track what's due</h1><p id="asgHint" style="margin-top:6px; color:var(--muted); font-size:14px;"></p></div>
+      </div>
+      <div class="card form-card pad" data-admin-only>
+        <h4 style="font-size:14.5px; margin-bottom:14px;">Post a new assignment</h4>
+        <div class="form-grid">
+          <div class="field"><label>Title</label><input type="text" id="asgTitle" placeholder="e.g. DSA Assignment 4"></div>
+          <div class="field"><label>Subject</label><input type="text" id="asgSubject" placeholder="e.g. CS"></div>
+          <div class="field"><label>Due date</label><input type="date" id="asgDue"></div>
+          <div class="field"><label>Attach file (optional)</label><input type="file" id="asgFileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.webp"></div>
+        </div>
+        <button class="btn-add" id="addAsgBtn" style="margin-top:14px;">+ Post assignment</button>
+        <div class="form-error" id="asgError"></div>
+      </div>
+      <div class="chip-row" id="asgChips"></div>
+      <div id="assignmentsList"></div>
+    </section>
+  </main>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-box">
+    <div class="preview-header">
+      <div class="preview-title" id="previewTitle">File Preview</div>
+      <button class="preview-close" id="previewClose">✕</button>
+    </div>
+    <div class="preview-body" id="previewBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const API_BASE = window.ISTIAN_API_BASE;
+
+  function getToken(){ return localStorage.getItem('istian_token'); }
+  function setToken(t){ localStorage.setItem('istian_token', t); }
+  function clearToken(){ localStorage.removeItem('istian_token'); }
+  function getUser(){
+    try{ return JSON.parse(localStorage.getItem('istian_user') || 'null'); }
+    catch{ return null; }
+  }
+  function setUser(u){ localStorage.setItem('istian_user', JSON.stringify(u)); }
+
+  let currentUser = null;
+
+  async function api(path, opts = {}){
+    const res = await fetch(API_BASE + path, {
+      method: opts.method || 'GET',
+      headers: Object.assign(
+        { 'Content-Type': 'application/json' },
+        getToken() ? { 'Authorization': 'Bearer ' + getToken() } : {}
+      ),
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    return handleResponse(res);
+  }
+
+  async function apiForm(path, formData, method = 'POST'){
+    const res = await fetch(API_BASE + path, {
+      method,
+      headers: getToken() ? { 'Authorization': 'Bearer ' + getToken() } : {},
+      body: formData
+    });
+    return handleResponse(res);
+  }
+
+  async function handleResponse(res){
+    let data;
+    try { data = await res.json(); } catch { data = {}; }
+    if(res.status === 401){ logout(); throw new Error(data.error || 'Please log in again'); }
+    if(!res.ok){ throw new Error(data.error || `Request failed (${res.status})`); }
+    return data;
+  }
+
+  async function downloadFile(path, filename){
+    const res = await fetch(API_BASE + path, {
+      headers: getToken() ? { 'Authorization': 'Bearer ' + getToken() } : {}
+    });
+    if(!res.ok){ showToast('Could not download file'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename || 'download';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  let toastTimer;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  function showError(elId, msg){
+    const el = document.getElementById(elId);
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4500);
+  }
+  function fmtDate(d){ return new Date(d).toLocaleDateString(undefined, { day:'numeric', month:'short' }); }
+  function fmtSize(bytes){
+    if(!bytes) return '';
+    if(bytes < 1024*1024) return Math.round(bytes/1024) + ' KB';
+    return (bytes/1024/1024).toFixed(1) + ' MB';
+  }
+  function isOverdue(dueDate){
+    const d = new Date(dueDate); d.setHours(23,59,59,999);
+    return d.getTime() < Date.now();
+  }
+
+  // ===== PREVIEW MODAL =====
+  const previewOverlay = document.getElementById('previewOverlay');
+  const previewBody    = document.getElementById('previewBody');
+  const previewTitle   = document.getElementById('previewTitle');
+
+  document.getElementById('previewClose').addEventListener('click', closePreview);
+  previewOverlay.addEventListener('click', (e) => { if(e.target === previewOverlay) closePreview(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closePreview(); });
+
+  function closePreview(){
+    previewOverlay.classList.remove('open');
+    previewBody.innerHTML = '';
+  }
+
+  async function openPreview(previewPath, filename){
+    previewTitle.textContent = filename;
+    previewBody.innerHTML = `<div class="preview-unsupported"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Loading…</div>`;
+    previewOverlay.classList.add('open');
+
+    const ext  = filename.split('.').pop().toLowerCase();
+    const isPdf   = ext === 'pdf';
+    const isImage = ['png','jpg','jpeg','webp','gif','bmp','svg'].includes(ext);
+    const isTxt   = ['txt','md','csv'].includes(ext);
+
+    try{
+      const res = await fetch(API_BASE + previewPath, {
+        headers: getToken() ? { 'Authorization': 'Bearer ' + getToken() } : {}
+      });
+      if(!res.ok) throw new Error('Could not load file');
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+
+      if(isPdf){
+        previewBody.innerHTML = `<iframe src="${url}" title="${filename}"></iframe>`;
+      } else if(isImage){
+        previewBody.innerHTML = `<img src="${url}" alt="${filename}">`;
+      } else if(isTxt){
+        const text = await blob.text();
+        previewBody.innerHTML = `<pre style="padding:20px; font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-word; font-family:'JetBrains Mono',monospace;">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
+      } else {
+        previewBody.innerHTML = `
+          <div class="preview-unsupported">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            <p><strong>${filename}</strong></p>
+            <p style="font-size:13px;">This file type (.${ext}) can't be previewed in the browser.<br>Please download it to open in the appropriate app.</p>
+          </div>`;
+      }
+    }catch(err){
+      previewBody.innerHTML = `<div class="preview-unsupported"><p style="color:var(--coral);">${err.message}</p></div>`;
+    }
+  }
+
+  // ===== AUTH =====
+  const authGate = document.getElementById('authGate');
+  const appRoot  = document.getElementById('appRoot');
+
+  document.getElementById('tabLoginBtn').addEventListener('click', () => switchAuthTab('login'));
+  document.getElementById('tabRegisterBtn').addEventListener('click', () => switchAuthTab('register'));
+  function switchAuthTab(which){
+    document.getElementById('tabLoginBtn').classList.toggle('active', which === 'login');
+    document.getElementById('tabRegisterBtn').classList.toggle('active', which === 'register');
+    document.getElementById('loginForm').classList.toggle('active', which === 'login');
+    document.getElementById('registerForm').classList.toggle('active', which === 'register');
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    try{
+      const { token, user } = await api('/auth/login', { method:'POST', body:{ email, password } });
+      setToken(token); setUser(user); enterApp(user);
+    }catch(err){ showError('loginError', err.message); }
+  });
+
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    try{
+      const { token, user } = await api('/auth/register', { method:'POST', body:{ name, email, password } });
+      setToken(token); setUser(user); enterApp(user);
+    }catch(err){ showError('registerError', err.message); }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  function logout(){
+    clearToken(); localStorage.removeItem('istian_user'); currentUser = null;
+    document.body.classList.remove('role-admin');
+    appRoot.style.display = 'none'; authGate.style.display = 'flex';
+  }
+
+  function enterApp(user){
+    currentUser = user;
+    document.body.classList.toggle('role-admin', user.role === 'admin');
+    authGate.style.display = 'none'; appRoot.style.display = 'grid';
+    document.getElementById('userChip').innerHTML = `
+      <div class="u-avatar">${user.name.slice(0,1).toUpperCase()}</div>
+      <div><div class="u-name">${user.name}</div><div class="u-role">${user.role}</div></div>`;
+    document.getElementById('ttHint').textContent = user.role === 'admin'
+      ? 'Upload the class timetable image for every student to see.'
+      : 'Timetable uploaded by your teacher/admin.';
+    document.getElementById('asgHint').textContent = user.role === 'admin'
+      ? 'Post assignments for the whole class.'
+      : 'Posted by your teacher/admin.';
+    switchView('dashboard');
+  }
+
+  (async function boot(){
+    const token = getToken(); const cachedUser = getUser();
+    if(!token || !cachedUser){ authGate.style.display = 'flex'; return; }
+    try{ const { user } = await api('/auth/me'); setUser(user); enterApp(user); }
+    catch{ logout(); }
+  })();
+
+  // ===== NAVIGATION =====
+  const views = document.querySelectorAll('.view');
+  const navButtons = document.querySelectorAll('#sideNav button, #mobileTabs button');
+  function switchView(name){
+    views.forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
+    loadView(name);
+  }
+  navButtons.forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+  function loadView(name){
+    if(name === 'dashboard') loadDashboard();
+    if(name === 'timetable') loadTimetable();
+    if(name === 'notes') loadNotes();
+    if(name === 'assignments') loadAssignments();
+  }
+
+  // ===== DASHBOARD =====
+  async function loadDashboard(){
+    document.getElementById('dashDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' });
+    try{
+      const { latestUploads } = await api('/dashboard/summary');
+      const container = document.getElementById('latestUploads');
+      if(!latestUploads || latestUploads.length === 0){ container.innerHTML = '<p class="empty-note">No files uploaded yet.</p>'; return; }
+      const typeIcon = (type) => {
+        if(type === 'timetable') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>`;
+        if(type === 'note') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>`;
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`;
+      };
+      const typeLabel = { timetable:'Timetable', note:'Note', assignment:'Assignment' };
+      container.innerHTML = `<div class="upload-list">` +
+        latestUploads.map(u => `
+          <div class="upload-item">
+            <div class="upload-icon ${u.type === 'timetable' ? 'tt' : u.type === 'note' ? 'note' : 'asg'}">${typeIcon(u.type)}</div>
+            <div class="upload-info">
+              <div class="upload-title">${u.title}</div>
+              <div class="upload-meta">${typeLabel[u.type]} · ${u.subject}${u.size ? ' · ' + fmtSize(u.size) : ''} · ${fmtDate(u.uploadedAt)}</div>
+            </div>
+            <button class="btn-download" data-path="${u.downloadPath}" data-name="${u.filename}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Download
+            </button>
+          </div>`).join('') + `</div>`;
+      container.querySelectorAll('.btn-download').forEach(btn => {
+        btn.addEventListener('click', () => downloadFile(btn.dataset.path, btn.dataset.name));
+      });
+      document.getElementById('sideFoot').textContent = 'Connected · ' + new Date().toLocaleTimeString();
+    }catch(err){ document.getElementById('sideFoot').textContent = 'Backend not reachable'; }
+  }
+
+  // ===== TIMETABLE =====
+  document.getElementById('ttFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    document.getElementById('ttSelectedFile').textContent = file ? '📎 ' + file.name : '';
+  });
+
+  async function loadTimetable(){
+    try{
+      const { file } = await api('/timetable');
+      const wrap = document.getElementById('ttImageWrap');
+      if(file){
+        const isImage = file.mimetype && file.mimetype.startsWith('image/');
+        wrap.innerHTML = `
+          <div class="tt-image-wrap">
+            <div class="tt-image-header">
+              <div class="tt-img-info">
+                <div class="tt-img-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div>
+                  <div class="tt-img-name">${file.originalName}</div>
+                  <div class="tt-img-sub">${fmtSize(file.size)}</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn-download" id="downloadTtBtn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  Download
+                </button>
+                <button class="btn-remove-file" data-admin-only id="removeTtBtn">Remove</button>
+              </div>
+            </div>
+            ${isImage ? `<img id="ttInlineImg" alt="Class Timetable" style="width:100%; display:block; max-height:700px; object-fit:contain; background:#f0ede8;">` : ''}
+          </div>`;
+
+        // Load image via fetch+blob to include auth header (img tags can't send Bearer tokens)
+        if(isImage){
+          fetch(API_BASE + '/timetable/image', {
+            headers: getToken() ? { 'Authorization': 'Bearer ' + getToken() } : {}
+          }).then(r => r.blob()).then(blob => {
+            const imgEl = document.getElementById('ttInlineImg');
+            if(imgEl) imgEl.src = URL.createObjectURL(blob);
+          }).catch(() => {});
+        }
+
+        document.getElementById('downloadTtBtn').addEventListener('click', () => downloadFile('/timetable/file', file.originalName));
+        const rmBtn = document.getElementById('removeTtBtn');
+        if(rmBtn) rmBtn.addEventListener('click', async () => {
+          await api('/timetable/file', { method:'DELETE' });
+          showToast('Timetable removed'); loadTimetable();
+        });
+      } else {
+        wrap.innerHTML = `<div class="card pad" style="text-align:center; color:var(--muted); font-size:14px; padding:40px;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px; opacity:.4;"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+          <p>No timetable uploaded yet.</p>
+        </div>`;
+      }
+    }catch(err){ showToast(err.message); }
+  }
+
+  document.getElementById('uploadTtFileBtn').addEventListener('click', async () => {
+    const input = document.getElementById('ttFileInput');
+    if(!input.files[0]){ showError('ttFileError', 'Choose an image file first.'); return; }
+    const fd = new FormData(); fd.append('file', input.files[0]);
+    try{
+      await apiForm('/timetable/file', fd, 'POST');
+      input.value = ''; document.getElementById('ttSelectedFile').textContent = '';
+      showToast('Timetable uploaded!'); loadTimetable();
+    }catch(err){ showError('ttFileError', err.message); }
+  });
+
+  // ===== NOTES =====
+  let activeNoteSubject = null;
+  async function loadNotes(){
+    try{
+      const { notes } = await api('/notes');
+      const subjects = [...new Set(notes.map(n => n.subject))];
+      document.getElementById('noteChips').innerHTML = ['All', ...subjects].map(s => `
+        <button class="chip ${(!activeNoteSubject && s==='All') || activeNoteSubject===s ? 'active' : ''}" data-subject="${s}">${s}</button>
+      `).join('');
+      document.querySelectorAll('#noteChips .chip').forEach(c => {
+        c.addEventListener('click', () => { activeNoteSubject = c.dataset.subject === 'All' ? null : c.dataset.subject; loadNotes(); });
+      });
+      const filtered = activeNoteSubject ? notes.filter(n => n.subject === activeNoteSubject) : notes;
+      const grid = document.getElementById('notesGrid');
+      grid.innerHTML = filtered.length ? filtered.map(n => `
+        <div class="card note-card">
+          <div class="n-subject">${n.subject}</div>
+          <h4>${n.title}</h4>
+          <div class="n-actions">
+            ${n.hasFile ? `
+              <button class="btn-view" data-id="${n.id}" data-name="${n.file.originalName}">👁️ View</button>
+              <button class="btn-download" style="font-size:12px; padding:7px 13px;" data-id="${n.id}" data-name="${n.file.originalName}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Download
+              </button>
+            ` : '<span style="font-size:12px; color:var(--muted);">No file attached</span>'}
+            <button class="del-btn" data-admin-only data-id="${n.id}" title="Delete note">✕</button>
+          </div>
+          <div class="n-date">${fmtDate(n.createdAt)}</div>
+        </div>
+      `).join('') : `<p class="empty-note" style="grid-column:1/-1;">No notes found${activeNoteSubject ? ' for ' + activeNoteSubject : ''}.</p>`;
+
+      grid.querySelectorAll('.btn-view[data-id]').forEach(b => {
+        b.addEventListener('click', () => openPreview(`/notes/${b.dataset.id}/preview`, b.dataset.name));
+      });
+      grid.querySelectorAll('.btn-download[data-id]').forEach(b => {
+        b.addEventListener('click', () => downloadFile(`/notes/${b.dataset.id}/file`, b.dataset.name));
+      });
+      grid.querySelectorAll('.del-btn[data-admin-only]').forEach(b => {
+        b.addEventListener('click', async () => { await api(`/notes/${b.dataset.id}`, { method:'DELETE' }); showToast('Note deleted'); loadNotes(); });
+      });
+    }catch(err){ showToast(err.message); }
+  }
+
+  document.getElementById('addNoteBtn').addEventListener('click', async () => {
+    const subject = document.getElementById('noteSubject').value.trim();
+    const title   = document.getElementById('noteTitle').value.trim();
+    const fileInput = document.getElementById('noteFileInput');
+    if(!subject || !title){ showError('noteError', 'Subject and title are required.'); return; }
+    try{
+      const fd = new FormData();
+      fd.append('subject', subject); fd.append('title', title);
+      if(fileInput.files[0]) fd.append('file', fileInput.files[0]);
+      await apiForm('/notes', fd, 'POST');
+      document.getElementById('noteSubject').value = '';
+      document.getElementById('noteTitle').value = '';
+      fileInput.value = '';
+      showToast('Note uploaded!'); loadNotes();
+    }catch(err){ showError('noteError', err.message); }
+  });
+
+  // ===== ASSIGNMENTS =====
+  let activeAsgSubject = null;
+  async function loadAssignments(){
+    try{
+      const { assignments } = await api('/assignments');
+      const subjects = [...new Set(assignments.map(a => a.subject))].sort();
+      document.getElementById('asgChips').innerHTML = ['All', ...subjects].map(s => `
+        <button class="chip ${(!activeAsgSubject && s==='All') || activeAsgSubject===s ? 'active' : ''}" data-subject="${s}">${s}</button>
+      `).join('');
+      document.querySelectorAll('#asgChips .chip').forEach(c => {
+        c.addEventListener('click', () => { activeAsgSubject = c.dataset.subject === 'All' ? null : c.dataset.subject; loadAssignments(); });
+      });
+
+      const filtered = activeAsgSubject ? assignments.filter(a => a.subject === activeAsgSubject) : assignments;
+      const container = document.getElementById('assignmentsList');
+      if(!filtered.length){ container.innerHTML = `<p class="empty-note">No assignments${activeAsgSubject ? ' for ' + activeAsgSubject : ''} yet.</p>`; return; }
+
+      const groups = {};
+      for(const a of filtered){ if(!groups[a.subject]) groups[a.subject] = []; groups[a.subject].push(a); }
+
+      container.innerHTML = Object.entries(groups).map(([subject, items]) => `
+        <div class="subject-section">
+          <div class="subject-section-head">
+            <h3>${subject}</h3>
+            <span class="subject-count">${items.length} assignment${items.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="card pad">
+            ${items.map(a => `
+              <div class="assignment-row ${a.myStatus === 'done' ? 'is-done' : ''}">
+                <button class="check-circle ${a.myStatus === 'done' ? 'done' : ''}" data-id="${a.id}" data-status="${a.myStatus}">
+                  ${a.myStatus === 'done' ? '✓' : ''}
+                </button>
+                <div class="a-info">
+                  <div class="a-title">${a.title}</div>
+                  <div class="a-sub">Due ${fmtDate(a.dueDate)}${a.myStatus==='pending' && isOverdue(a.dueDate) ? ' · <span style="color:var(--coral); font-weight:700;">Overdue</span>' : ''}</div>
+                </div>
+                <div class="a-actions">
+                  ${a.hasFile ? `
+                    <button class="btn-view" data-id="${a.id}" data-name="${a.file.originalName}">👁️ View</button>
+                    <button class="a-file-link" data-id="${a.id}" data-name="${a.file.originalName}">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                      Download
+                    </button>
+                  ` : ''}
+                  <span class="pill ${isOverdue(a.dueDate) && a.myStatus !== 'done' ? 'coral' : a.myStatus === 'done' ? 'green' : 'amber'}">${a.myStatus === 'done' ? 'Done' : isOverdue(a.dueDate) ? 'Overdue' : fmtDate(a.dueDate)}</span>
+                  <button class="del-btn" data-admin-only data-id="${a.id}" style="position:static; opacity:1;" title="Delete">✕</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.check-circle').forEach(c => c.addEventListener('click', async () => {
+        const newStatus = c.dataset.status === 'done' ? 'pending' : 'done';
+        await api(`/assignments/${c.dataset.id}`, { method:'PATCH', body:{ status:newStatus } });
+        loadAssignments();
+      }));
+      container.querySelectorAll('.btn-view[data-id]').forEach(b => {
+        b.addEventListener('click', () => openPreview(`/assignments/${b.dataset.id}/preview`, b.dataset.name));
+      });
+      container.querySelectorAll('.a-file-link').forEach(l => l.addEventListener('click', () => {
+        downloadFile(`/assignments/${l.dataset.id}/file`, l.dataset.name);
+      }));
+      container.querySelectorAll('.del-btn[data-admin-only]').forEach(b => b.addEventListener('click', async () => {
+        await api(`/assignments/${b.dataset.id}`, { method:'DELETE' });
+        showToast('Assignment deleted'); loadAssignments();
+      }));
+    }catch(err){ showToast(err.message); }
+  }
+
+  document.getElementById('addAsgBtn').addEventListener('click', async () => {
+    const title   = document.getElementById('asgTitle').value.trim();
+    const subject = document.getElementById('asgSubject').value.trim();
+    const dueDate = document.getElementById('asgDue').value;
+    const fileInput = document.getElementById('asgFileInput');
+    if(!title || !subject || !dueDate){ showError('asgError', 'Title, subject and due date are required.'); return; }
+    try{
+      const fd = new FormData();
+      fd.append('title', title); fd.append('subject', subject); fd.append('dueDate', dueDate);
+      if(fileInput.files[0]) fd.append('file', fileInput.files[0]);
+      await apiForm('/assignments', fd, 'POST');
+      document.getElementById('asgTitle').value = '';
+      document.getElementById('asgSubject').value = '';
+      document.getElementById('asgDue').value = '';
+      fileInput.value = '';
+      showToast('Assignment posted!'); loadAssignments();
+    }catch(err){ showError('asgError', err.message); }
+  });
+
+})();
+</script>
+</body>
+</html>

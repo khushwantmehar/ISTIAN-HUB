@@ -1,0 +1,109 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Class Teacher",
+      "email": "khushwantmehar@admin",
+      "passwordHash": "$2b$10$XSOE5zpfENqYcV7siGjw0eefkurrnElyaXQa2OVF5xFrpN9sY/MwG",
+      "role": "admin",
+      "createdAt": 1787123441291
+    },
+    {
+      "id": "6",
+      "name": "AAYAN",
+      "email": "aayan@gmail.com",
+      "passwordHash": "$2b$10$XO4d0d90yLWbOpRslqUNc.Hu9Glio7GVsMVskgzd9nsoJUjvqqNW2",
+      "role": "student",
+      "createdAt": 1787124612410
+    }
+  ],
+  "notes": [],
+  "timetable": [],
+  "timetableFile": {
+    "originalName": "Second Year - TT_20July_Updated.xlsx",
+    "storedName": "6796ae3dffbc8519789e6c848e055cb8.xlsx",
+    "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "size": 72526,
+    "uploadedAt": 1787123891763
+  },
+  "assignments": [
+    {
+      "id": "2",
+      "title": "ASSIGNMENT 1",
+      "subject": "DBMS",
+      "dueDate": "2026-08-19",
+      "notes": "",
+      "file": {
+        "originalName": "Assignment_1st_DBMS.docx.pdf",
+        "storedName": "61494f1f4198cb66d7111c4a26898bf8.pdf",
+        "mimetype": "application/pdf",
+        "size": 101867,
+        "uploadedAt": 1787124378876
+      },
+      "completions": {
+        "1": "pending",
+        "6": "pending"
+      },
+      "createdBy": "1",
+      "createdAt": 1787124378876
+    },
+    {
+      "id": "3",
+      "title": "ASSIGNMENT",
+      "subject": "DBMS",
+      "dueDate": "2026-08-19",
+      "notes": "",
+      "file": {
+        "originalName": "Module 03 Assignment.pdf",
+        "storedName": "e9aac969dbd871b5b0c2c569f07ad5ee.pdf",
+        "mimetype": "application/pdf",
+        "size": 88381,
+        "uploadedAt": 1787124436890
+      },
+      "completions": {},
+      "createdBy": "1",
+      "createdAt": 1787124436890
+    },
+    {
+      "id": "4",
+      "title": "ASSIGNMENT 4",
+      "subject": "DBMS",
+      "dueDate": "2026-08-19",
+      "notes": "",
+      "file": {
+        "originalName": "Module 4 Assignment â SQL JOINs.pdf",
+        "storedName": "b5a50b4aaab071087bb56e960d739592.pdf",
+        "mimetype": "application/pdf",
+        "size": 77111,
+        "uploadedAt": 1787124467135
+      },
+      "completions": {
+        "1": "pending"
+      },
+      "createdBy": "1",
+      "createdAt": 1787124467135
+    },
+    {
+      "id": "5",
+      "title": "ASSIGNMENT 5",
+      "subject": "DBMS",
+      "dueDate": "2026-08-19",
+      "notes": "",
+      "file": {
+        "originalName": "Module 5 - Assignment - SQL Functions.pdf",
+        "storedName": "d38180dd5f7b8edfafa5313a74015446.pdf",
+        "mimetype": "application/pdf",
+        "size": 118909,
+        "uploadedAt": 1787124494988
+      },
+      "completions": {
+        "1": "pending"
+      },
+      "createdBy": "1",
+      "createdAt": 1787124494988
+    }
+  ],
+  "attendance": [],
+  "reminders": [],
+  "nextId": 7
+}
