@@ -36,6 +36,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Request logger — helps debug 404s
+app.use((req, res, next) => {
+  const orig = res.json.bind(res);
+  res.json = (body) => { console.log(`${req.method} ${req.path} → ${res.statusCode}`); return orig(body); };
+  next();
+});
+
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'istianhub-backend' }));
 
 app.use('/api/auth', authRouter);
